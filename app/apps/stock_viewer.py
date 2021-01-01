@@ -52,7 +52,8 @@ def display_value(n_clicks, symbol: str):
         symbol = symbol.upper().strip()
         ticker = symbol + ".NS"
         yTicker = Ticker(ticker)
-        yearly_pricing_data = yTicker.history().loc[ticker]
+        yearly_pricing_data = yTicker.history(
+            period='1y', interval='1d').loc[ticker]
         yearly_pricing_data = yearly_pricing_data.reset_index()
         pricing = yTicker.price[ticker]
         sTicker = STicker(symbol=symbol)

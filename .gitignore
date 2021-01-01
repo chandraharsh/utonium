@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+.google-cookie
+apps/crypto_cp.json
 
 # C extensions
 *.so
