@@ -1,0 +1,71 @@
+{
+    "crypto": {
+        "viewer": {
+            "pref_curr": [
+                "usd",
+                "inr",
+                "gbp",
+                "jpy"
+            ],
+            "markets": [
+                "binance",
+                "kraken",
+                "bitfinex"
+            ],
+            "available_markets": [
+                "aax",
+                "b2bx",
+                "balancer",
+                "bibox",
+                "bigone",
+                "biki",
+                "binance",
+                "bitcoin_com",
+                "bitfinex",
+                "bitflyer",
+                "bitmax",
+                "bitstamp",
+                "bkex",
+                "btse",
+                "bw",
+                "cbx",
+                "coinall",
+                "coinbene",
+                "coineal",
+                "coinsbit",
+                "cointiger",
+                "crypto_com",
+                "currency",
+                "dcoin",
+                "digifinex",
+                "dydx",
+                "floatsv",
+                "ftx_spot",
+                "ftx_us",
+                "gate",
+                "gdax",
+                "gemini",
+                "hitbtc",
+                "hoo",
+                "huobi",
+                "indoex",
+                "kraken",
+                "kucoin",
+                "lbank",
+                "okcoin",
+                "okex",
+                "okex_korea",
+                "p2pb2b",
+                "quoine",
+                "sushiswap",
+                "tokenize",
+                "uniswap",
+                "vb",
+                "whitebit",
+                "xt",
+                "zb",
+                "zbg"
+            ]
+        }
+    }
+}
