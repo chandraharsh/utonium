@@ -29,7 +29,7 @@ layout = html.Div([
                         [
                             dbc.Input(
                                 type="text",
-                                placeholder="Enter Symbol",
+                                placeholder="Enter Symbol or slug",
                                 id='crypto-symbol-input'),
                         ], className="mr-3",
                     ),
@@ -59,14 +59,17 @@ def display_value(n_clicks, symbol: str):
         try:
             data = cg.get_coin_by_id(
                 str(coin_list_df.loc[symbol].id), localization='false')
-        except(Exception):
-            data = {}
+        except(ValueError, KeyError):
+            # treating symbol as slug
+            data = cg.get_coin_by_id(
+                symbol.lower(), localization='false')
+            symbol = data['symbol']
         if not data:
             return dbc.Alert(dcc.Markdown('''
             Could not fetch data for symbol : **{0}**.
             ---
             Check [CoinGecko](https://www.coingecko.com/en)
-             or [CoinMarketCap](https://coinmarketcap.com/) 
+             or [CoinMarketCap](https://coinmarketcap.com/)
              for a valid symbol.
             '''.format(symbol)), color="danger"),
         with open('config.json', 'r') as file:
@@ -190,20 +193,23 @@ def toggle_popover(n, is_open):
 
 def display_contract_address(data):
     try:
-        return dbc.Row([
-            dbc.InputGroup([
-                dbc.InputGroupAddon(
-                    'Contract', addon_type='prepend'),
-                dbc.Input(value=data['contract_address'],
-                          id='contract-address',
-                          disabled=True, plaintext=True),
-                dbc.InputGroupAddon(dbc.Button(id='copy-button',
-                                               className="far fa-clipboard"),
-                                    addon_type='append')
-            ]),
-            html.Div(id='copy-address-output',
-                     style={'display': 'none'})
-        ], style={'width': '30rem'})
+        if data['contract_address'].startswith('0x'):
+            return dbc.Row([
+                dbc.InputGroup([
+                    dbc.InputGroupAddon(
+                        'Contract', addon_type='prepend'),
+                    dbc.Input(value=data['contract_address'],
+                              id='contract-address',
+                              disabled=True, plaintext=True),
+                    dbc.InputGroupAddon(dbc.Button(id='copy-button',
+                                                   className="far fa-clipboard"),
+                                        addon_type='append')
+                ]),
+                html.Div(id='copy-address-output',
+                         style={'display': 'none'})
+            ], style={'width': '30rem'})
+        else:
+            return dbc.Row()
     except(KeyError):
         return dbc.Row()
 
@@ -285,7 +291,7 @@ def get_ticker_carousel(tickers):
                             f"{get_base_name(ticker)} / {ticker['target']}",
                             className='card-title'),
                         html.H5(
-                            f"Last Price: {ticker['last']}",
+                            f"Last Price: {ticker['last']: .7f}",
                             className="card-text"),
                         html.P(
                             f"Volume: {round(ticker['volume'], 2)}",
@@ -457,7 +463,7 @@ def convert_from_eth(*args):
     if amount is None or currency is None:
         raise PreventUpdate
     else:
-        return round(amount*cp[currency], 2)
+        return round(amount*cp[currency], 3)
 
 
 @app.callback(

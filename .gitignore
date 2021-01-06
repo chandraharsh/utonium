@@ -129,3 +129,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+app/.google-cookie
+app/apps/crypto_cp.json
