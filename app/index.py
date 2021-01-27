@@ -5,6 +5,7 @@ import dash_bootstrap_components as dbc
 
 from app import app
 from apps import stock_viewer, crypto_viewer
+from apps import crypto_rebalancer
 
 
 server = app.server
@@ -31,6 +32,13 @@ navbar = dbc.Navbar([
         ], navbar=True),
         sm=3, md=2, lg=1
     ),
+    dbc.Col(
+        dbc.Nav([
+            dbc.NavItem(dbc.NavLink("C-Rebalancer",
+                                    href="/apps/crypto_rebalancer"))
+        ], navbar=True),
+        sm=3, md=2, lg=1
+    ),
     # dbc.Col(
     #     dbc.Nav([
     #         dbc.NavItem(dbc.NavLink("Test",
@@ -52,6 +60,8 @@ def display_page(pathname):
         return stock_viewer.layout
     elif pathname == '/apps/crypto_viewer':
         return crypto_viewer.layout
+    elif pathname == '/apps/crypto_rebalancer':
+        return crypto_rebalancer.layout
     # elif pathname == '/apps/test':
     #     return test.layout
     else:

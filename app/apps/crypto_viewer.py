@@ -1,25 +1,19 @@
 import dash_html_components as html
 import dash_core_components as dcc
+import dash_bootstrap_components as dbc
 import dash_trich_components as dtc
 from dash.dependencies import Input, Output, State
 from dash_dangerously_set_inner_html import DangerouslySetInnerHTML
 from dash.exceptions import PreventUpdate
-import dash_bootstrap_components as dbc
 from app import app
 import json
 import datetime
 from urllib.parse import urlparse
 import dash
-import pyperclip
 from pycoingecko import CoinGeckoAPI
 import pandas as pd
 
 
-cg = CoinGeckoAPI()
-coin_list = cg.get_coins_list()
-coin_list_df = pd.DataFrame.from_records(coin_list)
-coin_list_df['symbol'] = coin_list_df['symbol'].str.upper()
-coin_list_df.set_index('symbol', inplace=True)
 layout = html.Div([
     dbc.Row(
         [
@@ -41,12 +35,14 @@ layout = html.Div([
         ]
     ),
     dbc.Row(html.Br()),
-    dbc.Row(dbc.Container(id='crypto-output', fluid=True))
+    dbc.Row(dbc.Container(id='crypto-output', fluid=True)),
+    dcc.Store(id='current-price-store')
 ])
 
 
 @app.callback(
-    Output('crypto-output', 'children'),
+    [Output('crypto-output', 'children'),
+     Output('current-price-store', 'data')],
     [Input('crypto-go-button', 'n_clicks')],
     [State('crypto-symbol-input', 'value')])
 def display_value(n_clicks, symbol: str):
@@ -56,6 +52,11 @@ def display_value(n_clicks, symbol: str):
         raise PreventUpdate
     else:
         symbol = symbol.upper()
+        cg = CoinGeckoAPI()
+        coin_list = cg.get_coins_list()
+        coin_list_df = pd.DataFrame.from_records(coin_list)
+        coin_list_df['symbol'] = coin_list_df['symbol'].str.upper()
+        coin_list_df.set_index('symbol', inplace=True)
         try:
             data = cg.get_coin_by_id(
                 str(coin_list_df.loc[symbol].id), localization='false')
@@ -95,8 +96,6 @@ def display_value(n_clicks, symbol: str):
                 for k in market_data if "percentage" not in k}
         col2 = {k: market_data[k] for k in market_data if "percentage" in k}
         current_price = data['market_data']['current_price']
-        with open('apps/crypto_cp.json', 'w') as file:
-            json.dump(current_price, file)
         return [
             dbc.Container(get_ticker_carousel(tickers=tickers),
                           fluid=True),
@@ -155,7 +154,7 @@ def display_value(n_clicks, symbol: str):
             dbc.Container(dbc.Row(get_stats(data=data),
                                   align='start', justify='center',
                                   style={'height': '100rem'}))
-        ]
+        ], current_price
 
 
 def get_avalable_markets_popover(markets: list):
@@ -200,27 +199,13 @@ def display_contract_address(data):
                         'Contract', addon_type='prepend'),
                     dbc.Input(value=data['contract_address'],
                               id='contract-address',
-                              disabled=True, plaintext=True),
-                    dbc.InputGroupAddon(dbc.Button(id='copy-button',
-                                                   className="far fa-clipboard"),
-                                        addon_type='append')
+                              disabled=True, plaintext=True)
                 ]),
-                html.Div(id='copy-address-output',
-                         style={'display': 'none'})
             ], style={'width': '30rem'})
         else:
             return dbc.Row()
     except(KeyError):
         return dbc.Row()
-
-
-@app.callback(
-    Output('copy-address-output', 'children'),
-    [Input('copy-button', 'n_clicks')],
-    State('contract-address', 'value'))
-def myfun(x, address):
-    pyperclip.copy(address)
-    return ""
 
 
 @app.callback(
@@ -261,22 +246,38 @@ def get_social_links(data: dict):
         buttons += [dbc.Button(
             'twitter',
             href=f"https://twitter.com/{data['links']['twitter_screen_name']}",
-            className='fab fa-twitter', style={"backgroundColor": '#1C9CEA'})]
+            className='fab fa-twitter',
+            style={"backgroundColor": '#1C9CEA'})]
     if data['links']['facebook_username'] != "":
         buttons += [dbc.Button(
             'facebook',
             href=f"https://facebook.com/{data['links']['facebook_username']}",
-            className='fab fa-facebook', style={'backgroundColor': '#3F64AB'})]
+            className='fab fa-facebook',
+            style={'backgroundColor': '#3F64AB'})]
     if data['links']['subreddit_url'] != "":
         buttons += [dbc.Button(
             'reddit',
             href=data['links']['subreddit_url'],
-            className='fab fa-reddit', style={'backgroundColor': '#F54300'})]
+            className='fab fa-reddit',
+            style={'backgroundColor': '#F54300'})]
     if data['links']['chat_url'][0] != "":
         buttons += [dbc.Button(
             'discord',
             href=data['links']['chat_url'][0],
-            className='fab fa-discord', style={'backgroundColor': '#7289DA'})]
+            className='fab fa-discord',
+            style={'backgroundColor': '#7289DA'})]
+    if data['links']['telegram_channel_identifier'] != "":
+        buttons += [dbc.Button(
+            'telegram',
+            href=f"https://t.me/{data['links']['telegram_channel_identifier']}",
+            className='fab fa-telegram-plane',
+            style={"backgroundColor": '#30A5D7'})]
+    if data['links']['announcement_url'][0] != "":
+        buttons += [dbc.Button(
+            'medium',
+            href=data['links']['announcement_url'][0],
+            className='fab fa-medium',
+            style={'backgroundColor': '#000000'})]
 
     return dbc.ButtonGroup(children=buttons)
 
@@ -451,13 +452,19 @@ def pretty_print(value):
 
 @app.callback(
     Output('result-side-1', 'value'),
-    [Input('curr-select-1', 'value'), Input('eth-side-1', 'value')],
-    [State('eth-side-1', 'value'), State('curr-select-1', 'value')]
+    [
+        Input('curr-select-1', 'value'),
+        Input('eth-side-1', 'value')
+    ],
+    [
+        State('eth-side-1', 'value'),
+        State('curr-select-1', 'value'),
+        State('current-price-store', 'data')
+    ]
 )
 def convert_from_eth(*args):
     ctx = dash.callback_context
-    with open('apps/crypto_cp.json', 'r') as file:
-        cp = json.load(file)
+    cp = ctx.states['current-price-store.data']
     amount = ctx.states['eth-side-1.value']
     currency = ctx.states['curr-select-1.value']
     if amount is None or currency is None:
@@ -468,13 +475,19 @@ def convert_from_eth(*args):
 
 @app.callback(
     Output('eth-side-2', 'value'),
-    [Input('curr-select-2', 'value'), Input('result-side-2', 'value')],
-    [State('result-side-2', 'value'), State('curr-select-2', 'value')]
+    [
+        Input('curr-select-2', 'value'),
+        Input('result-side-2', 'value')
+    ],
+    [
+        State('result-side-2', 'value'),
+        State('curr-select-2', 'value'),
+        State('current-price-store', 'data')
+    ]
 )
 def convert_to_eth(*args):
     ctx = dash.callback_context
-    with open('apps/crypto_cp.json', 'r') as file:
-        cp = json.load(file)
+    cp = ctx.states['current-price-store.data']
     amount = ctx.states['result-side-2.value']
     currency = ctx.states['curr-select-2.value']
     if amount is None or currency is None:

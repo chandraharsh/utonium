@@ -1,5 +1,6 @@
 {
     "crypto": {
+        "crypto_compare_api_key": "5a3971b0e5da9fcd52d940df30779eaaaff79ab4dee5a163fd8a329401cb9806",
         "viewer": {
             "pref_curr": [
                 "usd",
@@ -9,62 +10,10 @@
             ],
             "markets": [
                 "binance",
-                "kraken",
-                "bitfinex"
-            ],
-            "available_markets": [
-                "aax",
-                "b2bx",
-                "balancer",
-                "bibox",
-                "bigone",
-                "biki",
-                "binance",
-                "bitcoin_com",
                 "bitfinex",
-                "bitflyer",
-                "bitmax",
-                "bitstamp",
-                "bkex",
-                "btse",
-                "bw",
-                "cbx",
-                "coinall",
-                "coinbene",
-                "coineal",
-                "coinsbit",
-                "cointiger",
-                "crypto_com",
-                "currency",
-                "dcoin",
-                "digifinex",
-                "dydx",
-                "floatsv",
-                "ftx_spot",
-                "ftx_us",
-                "gate",
-                "gdax",
-                "gemini",
-                "hitbtc",
-                "hoo",
-                "huobi",
-                "indoex",
+                "bittrex",
                 "kraken",
-                "kucoin",
-                "lbank",
-                "okcoin",
-                "okex",
-                "okex_korea",
-                "p2pb2b",
-                "quoine",
-                "sushiswap",
-                "tokenize",
-                "uniswap",
-                "vb",
-                "whitebit",
-                "xt",
-                "zb",
-                "zbg"
+                "poloniex"
             ]
         }
     }

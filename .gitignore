@@ -131,3 +131,4 @@ dmypy.json
 .pyre/
 app/.google-cookie
 app/apps/crypto_cp.json
+app/.google-cookie
