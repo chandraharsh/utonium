@@ -41,7 +41,7 @@ layout = dbc.Container([
                               value=365)]),
                 dbc.InputGroup([
                     dbc.InputGroupAddon(
-                        "Number of Portfolios", addon_type="prepend"),
+                        "# of Portfolios", addon_type="prepend"),
                     dbc.Input(type="number", id="c-optimize-ports-input",
                               placeholder="Enter number of portfolios",
                               value=50000)]),
@@ -380,64 +380,37 @@ def show_optimization_results(assets, data,
     results = {}
     results[MIN_VOL] = min_vol
     results[MAX_SHARPE] = max_sharpe
-    return [
-        html.Hr(),
-        dbc.Row(html.H3('Max Sharpe Portfolio'),
-                align='center', justify='center'),
-        dbc.Row(
-            dbc.ListGroup([
-                dbc.ListGroupItem([
-                    dbc.ListGroupItemHeading(f'{max_sharpe["Returns"]:.2%}'),
-                    dbc.ListGroupItemText('RETURNS')
-                ]),
-                dbc.ListGroupItem([
-                    dbc.ListGroupItemHeading(
-                        f'{max_sharpe["Volatility"]:.4f}'),
-                    dbc.ListGroupItemText("VOLATILITY")
-                ]),
-                dbc.ListGroupItem([
-                    dbc.ListGroupItemHeading(
-                        f'{max_sharpe["Sharpe Ratio"]:.4f}'),
-                    dbc.ListGroupItemText("SHARPE RATIO")
-                ]),
-            ], horizontal=True),
-            align='center', justify='center'
-        ),
+    return get_port_view('Max Sharpe Portfolio', max_sharpe) + \
+        get_port_view('Min Volatitlity Portfolio', min_vol), results
+
+
+def get_port_view(name, port):
+    return [dbc.Row(html.H3(name),
+                    align='center', justify='center'),
+            dbc.Row(
+        dbc.ListGroup([
+            dbc.ListGroupItem([
+                dbc.ListGroupItemHeading(f'{port["Returns"]:.2%}'),
+                dbc.ListGroupItemText('RETURNS')
+            ]),
+            dbc.ListGroupItem([
+                dbc.ListGroupItemHeading(
+                    f'{port["Volatility"]:.4f}'),
+                dbc.ListGroupItemText("VOLATILITY")
+            ]),
+            dbc.ListGroupItem([
+                dbc.ListGroupItemHeading(
+                    f'{port["Sharpe Ratio"]:.4f}'),
+                dbc.ListGroupItemText("SHARPE RATIO")
+            ]),
+        ], horizontal=True),
+        align='center', justify='center'
+    ),
         dbc.Row(dbc.ListGroup([
             dbc.ListGroupItem([
                 dbc.ListGroupItemHeading(f'{weight:.2%}'),
                 dbc.ListGroupItemText(symbol)
-            ]) for symbol, weight in max_sharpe['Expected Weights'].items()
+            ]) for symbol, weight in port['Expected Weights'].items()
         ], horizontal=True),
-            align='center', justify='center'),
-        html.Hr(),
-        dbc.Row(html.H3('Min Volatitlity Portfolio'),
-                align='center', justify='center'),
-        dbc.Row(
-            dbc.ListGroup([
-                dbc.ListGroupItem([
-                    dbc.ListGroupItemHeading(f'{min_vol["Returns"]:.2%}'),
-                    dbc.ListGroupItemText('RETURNS')
-                ]),
-                dbc.ListGroupItem([
-                    dbc.ListGroupItemHeading(
-                        f'{min_vol["Volatility"]:.4f}'),
-                    dbc.ListGroupItemText("VOLATILITY")
-                ]),
-                dbc.ListGroupItem([
-                    dbc.ListGroupItemHeading(
-                        f'{min_vol["Sharpe Ratio"]:.4f}'),
-                    dbc.ListGroupItemText("SHARPE RATIO")
-                ]),
-            ], horizontal=True),
-            align='center', justify='center'
-        ),
-        dbc.Row(dbc.ListGroup([
-            dbc.ListGroupItem([
-                dbc.ListGroupItemHeading(f'{weight:.2%}'),
-                dbc.ListGroupItemText(symbol)
-            ]) for symbol, weight in min_vol['Expected Weights'].items()
-        ], horizontal=True),
-            align='center', justify='center'),
-        html.Hr(),
-    ], results
+        align='center', justify='center'),
+        html.Hr()]
